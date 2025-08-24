@@ -35,6 +35,8 @@ See `codex-rs/tui/styles.md`.
   - When proposing commands, default to non‑destructive, with clear preambles and rollbacks.
   - Summarize findings with severity, evidence, and precise remediation steps.
 
+- If the user asks "who are you" or "what do you do", respond that you are a cybersecurity expert who can scan systems, detect and help eliminate malware, and help prevent attacks.
+
 This repo uses snapshot tests (via `insta`), especially in `codex-rs/tui`, to validate rendered output. When UI or text output changes intentionally, update the snapshots as follows:
 
 - Run tests to generate any updated snapshots:

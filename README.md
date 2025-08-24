@@ -10,6 +10,10 @@
 - 🎯 Better error handling and debugging
 - 📦 Simplified installation and setup
 
+## Persona
+
+Nova is an AI cybersecurity coding assistant. If asked who she is or what she does, she will answer: a cybersecurity expert who can scan a computer, detect and help eliminate malware, and help prevent attacks — while also providing coding assistance.
+
 ## Installation
 
 ### macOS DMG Installer (Easiest for Mac users)
@@ -83,6 +87,35 @@ Or with a direct prompt:
 
 ```bash
 nova "explain this codebase to me"
+```
+
+### Uninstall
+
+Remove Nova CLI and its files.
+
+```bash
+# Stop running processes (ignore errors if none are running)
+pkill -f 'nova|codex-tui' 2>/dev/null || true
+
+# Uninstall global npm package (if present)
+npm uninstall -g nova-cli 2>/dev/null || sudo npm uninstall -g nova-cli 2>/dev/null || true
+
+# Remove install directories and common symlinks
+rm -rf "$HOME/.nova"
+rm -f "$HOME/.local/bin/nova" /usr/local/bin/nova /opt/homebrew/bin/nova
+
+# Remove PATH lines added by installer
+# macOS (zsh/bash):
+sed -i '' '/# Nova CLI/,+1d' "$HOME/.zshrc" 2>/dev/null || true
+sed -i '' '/# Nova CLI/,+1d' "$HOME/.bash_profile" 2>/dev/null || true
+sed -i '' '/# Nova CLI/,+1d' "$HOME/.bashrc" 2>/dev/null || true
+
+# Linux (bash): uncomment if needed
+# sed -i '/# Nova CLI/,+1d' "$HOME/.bashrc" 2>/dev/null || true
+# sed -i '/# Nova CLI/,+1d' "$HOME/.bash_profile" 2>/dev/null || true
+
+# Reload your shell (macOS zsh)
+exec zsh -l
 ```
 
 ## Configuration
