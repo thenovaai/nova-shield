@@ -22,32 +22,30 @@
 ### One-Line Install (Cross-platform)
 
 ```bash
-curl -sSL https://gist.githubusercontent.com/ceobitch/YOUR_GIST_ID/raw/install-nova.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thenovaai/nova-shield/main/install-nova.sh | bash
 ```
-
-> **Note:** Replace `YOUR_GIST_ID` with the actual gist ID after creating the public gist
 
 ### Alternative: Manual Install
 
 **Option 1: Simple npm install**
 ```bash
-git clone https://github.com/ceobitch/nova-cli.git
-cd nova-cli/codex-cli
+git clone https://github.com/thenovaai/nova-shield.git
+cd nova-shield/codex-cli
 npm install -g .
 ```
 
 **Option 2: Using the install script**
 ```bash
-git clone https://github.com/ceobitch/nova-cli.git
-cd nova-cli
+git clone https://github.com/thenovaai/nova-shield.git
+cd nova-shield
 chmod +x install.sh
 ./install.sh
 ```
 
 **Option 3: From npm package**
 ```bash
-git clone https://github.com/ceobitch/nova-cli.git
-cd nova-cli/codex-cli
+git clone https://github.com/thenovaai/nova-shield.git
+cd nova-shield/codex-cli
 npm pack
 npm install -g nova-cli-0.1.0.tgz
 ```
@@ -61,8 +59,8 @@ npm install -g nova-cli-0.1.0.tgz
 
 ```bash
 # Clone the repository
-git clone https://github.com/ceobitch/nova-cli.git
-cd nova-cli
+git clone https://github.com/thenovaai/nova-shield.git
+cd nova-shield
 
 # Build the Rust components
 cd codex-rs
