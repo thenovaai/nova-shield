@@ -12,7 +12,6 @@ use codex_core::config::find_codex_home;
 use codex_core::config::load_config_as_toml_with_cli_overrides;
 use codex_core::protocol::AskForApproval;
 use codex_core::protocol::SandboxPolicy;
-use codex_login::AuthManager;
 use codex_login::AuthMode;
 use codex_login::CodexAuth;
 use codex_ollama::DEFAULT_OSS_MODEL;
@@ -31,7 +30,6 @@ mod bottom_pane;
 mod chatwidget;
 mod citation_regex;
 mod cli;
-mod clipboard_paste;
 mod common;
 pub mod custom_terminal;
 mod diff_render;
@@ -263,7 +261,9 @@ async fn run_ratatui_app(
 
         let mut lines: Vec<Line<'static>> = Vec::new();
         lines.push(Line::from(vec![
-            "✨⬆️ Update available!".bold().cyan(),
+            Span::raw("✨⬆️ Update available!")
+                .bold()
+                .style(Style::default().fg(ratatui::style::Color::Rgb(255, 165, 0))),
             Span::raw(" "),
             Span::raw(format!("{current_version} -> {latest_version}.")),
         ]));
@@ -272,7 +272,10 @@ async fn run_ratatui_app(
             let npm_cmd = "npm install -g @openai/codex@latest";
             lines.push(Line::from(vec![
                 Span::raw("Run "),
-                npm_cmd.cyan(),
+                Span::styled(
+                    npm_cmd,
+                    Style::default().fg(ratatui::style::Color::Rgb(255, 165, 0)),
+                ),
                 Span::raw(" to update."),
             ]));
         } else if cfg!(target_os = "macos")
@@ -281,13 +284,19 @@ async fn run_ratatui_app(
             let brew_cmd = "brew upgrade codex";
             lines.push(Line::from(vec![
                 Span::raw("Run "),
-                brew_cmd.cyan(),
+                Span::styled(
+                    brew_cmd,
+                    Style::default().fg(ratatui::style::Color::Rgb(255, 165, 0)),
+                ),
                 Span::raw(" to update."),
             ]));
         } else {
             lines.push(Line::from(vec![
                 Span::raw("See "),
-                "https://github.com/openai/codex/releases/latest".cyan(),
+                Span::styled(
+                    "https://github.com/openai/codex/releases/latest",
+                    Style::default().fg(ratatui::style::Color::Rgb(255, 165, 0)),
+                ),
                 Span::raw(" for the latest releases and installation options."),
             ]));
         }
@@ -301,7 +310,6 @@ async fn run_ratatui_app(
 
     let Cli { prompt, images, .. } = cli;
 
-    let auth_manager = AuthManager::shared(config.codex_home.clone(), config.preferred_auth_method);
     let login_status = get_login_status(&config);
     let should_show_onboarding =
         should_show_onboarding(login_status, &config, should_show_trust_screen);
@@ -314,7 +322,6 @@ async fn run_ratatui_app(
                 show_trust_screen: should_show_trust_screen,
                 login_status,
                 preferred_auth_method: config.preferred_auth_method,
-                auth_manager: auth_manager.clone(),
             },
             &mut tui,
         )
@@ -325,7 +332,7 @@ async fn run_ratatui_app(
         }
     }
 
-    let app_result = App::run(&mut tui, auth_manager, config, prompt, images).await;
+    let app_result = App::run(&mut tui, config, prompt, images).await;
 
     restore();
     // Mark the end of the recorded session.

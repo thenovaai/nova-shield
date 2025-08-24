@@ -1,4 +1,4 @@
-use codex_protocol::models::ResponseItem;
+use crate::models::ResponseItem;
 
 /// Transcript of conversation history
 #[derive(Debug, Clone, Default)]
@@ -66,7 +66,7 @@ impl ConversationHistory {
                 self.items.push(ResponseItem::Message {
                     id: None,
                     role: "assistant".to_string(),
-                    content: vec![codex_protocol::models::ContentItem::OutputText {
+                    content: vec![crate::models::ContentItem::OutputText {
                         text: delta.to_string(),
                     }],
                 });
@@ -110,8 +110,6 @@ fn is_api_message(message: &ResponseItem) -> bool {
         ResponseItem::Message { role, .. } => role.as_str() != "system",
         ResponseItem::FunctionCallOutput { .. }
         | ResponseItem::FunctionCall { .. }
-        | ResponseItem::CustomToolCall { .. }
-        | ResponseItem::CustomToolCallOutput { .. }
         | ResponseItem::LocalShellCall { .. }
         | ResponseItem::Reasoning { .. } => true,
         ResponseItem::Other => false,
@@ -120,11 +118,11 @@ fn is_api_message(message: &ResponseItem) -> bool {
 
 /// Helper to append the textual content from `src` into `dst` in place.
 fn append_text_content(
-    dst: &mut Vec<codex_protocol::models::ContentItem>,
-    src: &Vec<codex_protocol::models::ContentItem>,
+    dst: &mut Vec<crate::models::ContentItem>,
+    src: &Vec<crate::models::ContentItem>,
 ) {
     for c in src {
-        if let codex_protocol::models::ContentItem::OutputText { text } = c {
+        if let crate::models::ContentItem::OutputText { text } = c {
             append_text_delta(dst, text);
         }
     }
@@ -132,15 +130,15 @@ fn append_text_content(
 
 /// Append a single text delta to the last OutputText item in `content`, or
 /// push a new OutputText item if none exists.
-fn append_text_delta(content: &mut Vec<codex_protocol::models::ContentItem>, delta: &str) {
-    if let Some(codex_protocol::models::ContentItem::OutputText { text }) = content
+fn append_text_delta(content: &mut Vec<crate::models::ContentItem>, delta: &str) {
+    if let Some(crate::models::ContentItem::OutputText { text }) = content
         .iter_mut()
         .rev()
-        .find(|c| matches!(c, codex_protocol::models::ContentItem::OutputText { .. }))
+        .find(|c| matches!(c, crate::models::ContentItem::OutputText { .. }))
     {
         text.push_str(delta);
     } else {
-        content.push(codex_protocol::models::ContentItem::OutputText {
+        content.push(crate::models::ContentItem::OutputText {
             text: delta.to_string(),
         });
     }
@@ -149,7 +147,7 @@ fn append_text_delta(content: &mut Vec<codex_protocol::models::ContentItem>, del
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codex_protocol::models::ContentItem;
+    use crate::models::ContentItem;
 
     fn assistant_msg(text: &str) -> ResponseItem {
         ResponseItem::Message {

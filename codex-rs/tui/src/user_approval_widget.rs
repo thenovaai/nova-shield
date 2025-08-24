@@ -74,17 +74,6 @@ static COMMAND_SELECT_OPTIONS: LazyLock<Vec<SelectOption>> = LazyLock::new(|| {
             key: KeyCode::Char('n'),
             decision: ReviewDecision::Denied,
         },
-        SelectOption {
-            label: Line::from(vec![
-                "No, ".into(),
-                "provide ".into(),
-                "f".underlined(),
-                "eedback".into(),
-            ]),
-            description: "Do not run the command; provide feedback",
-            key: KeyCode::Char('f'),
-            decision: ReviewDecision::Abort,
-        },
     ]
 });
 
@@ -101,17 +90,6 @@ static PATCH_SELECT_OPTIONS: LazyLock<Vec<SelectOption>> = LazyLock::new(|| {
             description: "Do not apply the changes",
             key: KeyCode::Char('n'),
             decision: ReviewDecision::Denied,
-        },
-        SelectOption {
-            label: Line::from(vec![
-                "No, ".into(),
-                "provide ".into(),
-                "f".underlined(),
-                "eedback".into(),
-            ]),
-            description: "Do not apply the changes; provide feedback",
-            key: KeyCode::Char('f'),
-            decision: ReviewDecision::Abort,
         },
     ]
 });
@@ -167,7 +145,10 @@ impl UserApprovalWidget {
             } => {
                 let cmd = strip_bash_lc_and_escape(command);
                 let mut contents: Vec<Line> = to_command_display(
-                    vec!["? ".fg(Color::Cyan), "Codex wants to run ".bold()],
+                    vec![
+                        "? ".fg(Color::Rgb(255, 165, 0)),
+                        "Nova wants to run ".bold(),
+                    ],
                     cmd,
                     vec![],
                 );
@@ -280,7 +261,7 @@ impl UserApprovalWidget {
     }
 
     fn send_decision_with_feedback(&mut self, decision: ReviewDecision, feedback: String) {
-        let mut lines: Vec<Line<'static>> = vec![Line::from("")];
+        let mut lines: Vec<Line<'static>> = Vec::new();
         match &self.approval_request {
             ApprovalRequest::Exec { command, .. } => {
                 let cmd = strip_bash_lc_and_escape(command);
@@ -295,7 +276,7 @@ impl UserApprovalWidget {
                                 "✔ ".fg(Color::Green),
                                 "You ".into(),
                                 "approved".bold(),
-                                " codex to run ".into(),
+                                " nova to run ".into(),
                             ],
                             cmd,
                             vec![" this time".bold()],
@@ -307,7 +288,7 @@ impl UserApprovalWidget {
                                 "✔ ".fg(Color::Green),
                                 "You ".into(),
                                 "approved".bold(),
-                                " codex to run ".into(),
+                                " nova to run ".into(),
                             ],
                             cmd,
                             vec![" every time this session".bold()],
@@ -319,7 +300,7 @@ impl UserApprovalWidget {
                                 "✗ ".fg(Color::Red),
                                 "You ".into(),
                                 "did not approve".bold(),
-                                " codex to run ".into(),
+                                " nova to run ".into(),
                             ],
                             cmd,
                             vec![],
@@ -349,6 +330,7 @@ impl UserApprovalWidget {
                 lines.push(Line::from(l.to_string()));
             }
         }
+        lines.push(Line::from(""));
         self.app_event_tx.send(AppEvent::InsertHistoryLines(lines));
 
         let op = match &self.approval_request {
@@ -391,7 +373,7 @@ impl WidgetRef for &UserApprovalWidget {
             .enumerate()
             .map(|(idx, opt)| {
                 let style = if idx == self.selected_option {
-                    Style::new().bg(Color::Cyan).fg(Color::Black)
+                    Style::new().bg(Color::Rgb(255, 165, 0)).fg(Color::Black)
                 } else {
                     Style::new().add_modifier(Modifier::DIM)
                 };
@@ -430,7 +412,7 @@ impl WidgetRef for &UserApprovalWidget {
 
         Block::bordered()
             .border_type(BorderType::QuadrantOutside)
-            .border_style(Style::default().fg(Color::Cyan))
+            .border_style(Style::default().fg(Color::Rgb(255, 165, 0)))
             .borders(Borders::LEFT)
             .render_ref(
                 Rect::new(0, response_chunk.y, 1, response_chunk.height),

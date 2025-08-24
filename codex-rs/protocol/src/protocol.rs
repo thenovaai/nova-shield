@@ -22,7 +22,6 @@ use uuid::Uuid;
 use crate::config_types::ReasoningEffort as ReasoningEffortConfig;
 use crate::config_types::ReasoningSummary as ReasoningSummaryConfig;
 use crate::message_history::HistoryEntry;
-use crate::models::ResponseItem;
 use crate::parse_command::ParsedCommand;
 use crate::plan_tool::UpdatePlanArgs;
 
@@ -137,10 +136,6 @@ pub enum Op {
 
     /// Request a single history entry identified by `log_id` + `offset`.
     GetHistoryEntryRequest { offset: usize, log_id: u64 },
-
-    /// Request the full in-memory conversation transcript for the current session.
-    /// Reply is delivered via `EventMsg::ConversationHistory`.
-    GetHistory,
 
     /// Request the list of MCP tools available across all configured servers.
     /// Reply is delivered via `EventMsg::McpListToolsResponse`.
@@ -476,8 +471,6 @@ pub enum EventMsg {
 
     /// Notification that the agent is shutting down.
     ShutdownComplete,
-
-    ConversationHistory(ConversationHistoryResponseEvent),
 }
 
 // Individual event payload types matching each `EventMsg` variant.
@@ -658,14 +651,6 @@ impl McpToolCallEndEvent {
     }
 }
 
-/// Response payload for `Op::GetHistory` containing the current session's
-/// in-memory transcript.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct ConversationHistoryResponseEvent {
-    pub conversation_id: Uuid,
-    pub entries: Vec<ResponseItem>,
-}
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ExecCommandBeginEvent {
     /// Identifier so this can be paired with the ExecCommandEnd event.
@@ -685,15 +670,10 @@ pub struct ExecCommandEndEvent {
     pub stdout: String,
     /// Captured stderr
     pub stderr: String,
-    /// Captured aggregated output
-    #[serde(default)]
-    pub aggregated_output: String,
     /// The command's exit code.
     pub exit_code: i32,
     /// The duration of the command execution.
     pub duration: Duration,
-    /// Formatted output from the command, as seen by the model.
-    pub formatted_output: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

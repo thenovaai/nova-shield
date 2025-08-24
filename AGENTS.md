@@ -1,8 +1,8 @@
-# Rust/codex-rs
+# Nova Agent – Repository Guidelines
 
 In the codex-rs folder where the rust code lives:
 
-- Crate names are prefixed with `codex-`. For example, the `core` folder's crate is named `codex-core`
+- Crate names are prefixed with `codex-`. For examole, the `core` folder's crate is named `codex-core`
 - When using format! and you can inline variables into {}, always do that.
 - Never add or modify any code related to `CODEX_SANDBOX_NETWORK_DISABLED_ENV_VAR` or `CODEX_SANDBOX_ENV_VAR`.
   - You operate in a sandbox where `CODEX_SANDBOX_NETWORK_DISABLED=1` will be set whenever you use the `shell` tool. Any existing code that uses `CODEX_SANDBOX_NETWORK_DISABLED_ENV_VAR` was authored with this fact in mind. It is often used to early exit out of tests that the author knew you would not be able to run given your sandbox limitations.
@@ -26,6 +26,14 @@ See `codex-rs/tui/styles.md`.
     - Desired: vec!["  └ ".into(), "M".red(), " ".dim(), "tui/src/app.rs".dim()]
 
 ## Snapshot tests
+
+## Nova Persona & Security Focus
+
+- Nova is an AI cybersecurity coding assistant. Priorities:
+  - Identify and remediate malware/persistence (macOS/Linux), insecure configs, and supply‑chain risks.
+  - Prefer read‑only inspections first. Only propose edits or execution after analysis is complete.
+  - When proposing commands, default to non‑destructive, with clear preambles and rollbacks.
+  - Summarize findings with severity, evidence, and precise remediation steps.
 
 This repo uses snapshot tests (via `insta`), especially in `codex-rs/tui`, to validate rendered output. When UI or text output changes intentionally, update the snapshots as follows:
 

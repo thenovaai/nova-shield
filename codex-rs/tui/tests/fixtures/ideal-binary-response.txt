@@ -9,8 +9,7 @@ codex
 I’m going to scan the workspace and Cargo manifests to see build profiles and
 dependencies that impact binary size. Then I’ll summarize the main causes.
 
-_
-  ✓ ls -la
+⚡  Running ls -la
   └ total 6696
     drwxr-xr-x@ 39 easong  staff     1248 Aug  9 08:49 .
     drwxr-xr-x@ 29 easong  staff      928 Aug  9 08:50 ..
@@ -22,7 +21,7 @@ _
     drwxr-xr-x@  6 easong  staff      192 Aug  7 19:20 tui
     -rw-r--r--@  1 easong  staff     8639 Aug  6 23:30 typewriter.md
     -rw-r--r--@  1 easong  staff     7673 Aug  6 21:58 wrap-plan.md
-  ✓ sed -n '1,200p' Cargo.toml
+⚡  Running sed -n '1,200p' Cargo.toml
   └ [workspace]
     members = [
         "ansi-escape",
@@ -35,7 +34,7 @@ _
     # ratatui = { path = "../../ratatui" }
     ratatui = { git = "https://github.com/nornagon/ratatui", branch =
 "nornagon-v0.29.0-patch" }
-  ✓ for d in ansi-escape apply-patch arg0 cli common core exec execpolicy
+⚡  Running for d in ansi-escape apply-patch arg0 cli common core exec execpolicy
 file-search linux-sandbox login mcp-client mcp-server mcp-types ollama tui; do
 echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
   └ --- ansi-escape/Cargo.toml
@@ -49,7 +48,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
         "signal",
     ] }
     tracing = { version
-  ✓ sed -n '1,200p' execpolicy/Cargo.toml
+⚡  Running sed -n '1,200p' execpolicy/Cargo.toml
   └ [package]
     name = "codex-execpolicy"
     version = { workspace = true }
@@ -61,7 +60,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
 
     [dev-dependencies]
     tempfile = "3.13.0"
-  ✓ sed -n '1,200p' file-search/Cargo.toml
+⚡  Running sed -n '1,200p' file-search/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-file-search"
@@ -73,7 +72,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
     serde = { version = "1", features = ["derive"] }
     serde_json = "1.0.142"
     tokio = { version = "1", features = ["full"] }
-  ✓ sed -n '1,200p' linux-sandbox/Cargo.toml
+⚡  Running sed -n '1,200p' linux-sandbox/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-linux-sandbox"
@@ -85,7 +84,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
         "rt-multi-thread",
         "signal",
     ] }
-  ✓ sed -n '1,200p' login/Cargo.toml
+⚡  Running sed -n '1,200p' login/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-login"
@@ -97,7 +96,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
     [dev-dependencies]
     pretty_assertions = "1.4.1"
     tempfile = "3"
-  ✓ sed -n '1,200p' mcp-client/Cargo.toml
+⚡  Running sed -n '1,200p' mcp-client/Cargo.toml
   └ [package]
     name = "codex-mcp-client"
     version = { workspace = true }
@@ -109,7 +108,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
         "sync",
         "time",
     ] }
-  ✓ sed -n '1,200p' mcp-server/Cargo.toml
+⚡  Running sed -n '1,200p' mcp-server/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-mcp-server"
@@ -121,7 +120,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
     tempfile = "3"
     tokio-test = "0.4"
     wiremock = "0.6"
-  ✓ sed -n '1,200p' mcp-types/Cargo.toml
+⚡  Running sed -n '1,200p' mcp-types/Cargo.toml
   └ [package]
     edition = "2024"
     name = "mcp-types"
@@ -133,7 +132,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
     [dependencies]
     serde = { version = "1", features = ["derive"] }
     serde_json = "1"
-  ✓ sed -n '1,200p' ollama/Cargo.toml
+⚡  Running sed -n '1,200p' ollama/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-ollama"
@@ -145,7 +144,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
 
     [dev-dependencies]
     tempfile = "3"
-  ✓ sed -n '1,200p' tui/Cargo.toml
+⚡  Running sed -n '1,200p' tui/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-tui"
@@ -157,7 +156,7 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
     pretty_assertions = "1"
     rand = "0.8"
     vt100 = "0.16.2"
-  ✓ sed -n '1,200p' chatgpt/Cargo.toml
+⚡  Running sed -n '1,200p' chatgpt/Cargo.toml
   └ [package]
     edition = "2024"
     name = "codex-chatgpt"
@@ -169,7 +168,6 @@ echo "--- $d/Cargo.toml"; sed -n '1,200p' $d/Cargo.toml; echo; done
 
     [dev-dependencies]
     tempfile = "3"
-
 codex
 Here’s what’s driving size in this workspace’s binaries.
 

@@ -5,17 +5,18 @@ use crate::file_search::FileSearchManager;
 use crate::transcript_app::TranscriptApp;
 use crate::tui;
 use crate::tui::TuiEvent;
-use codex_ansi_escape::ansi_escape_line;
 use codex_core::ConversationManager;
 use codex_core::config::Config;
 use codex_core::protocol::TokenUsage;
-use codex_login::AuthManager;
 use color_eyre::eyre::Result;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEvent;
 use crossterm::event::KeyEventKind;
+use crossterm::execute;
+use crossterm::terminal::EnterAlternateScreen;
+use crossterm::terminal::LeaveAlternateScreen;
 use crossterm::terminal::supports_keyboard_enhancement;
-use ratatui::style::Stylize;
+use ratatui::layout::Rect;
 use ratatui::text::Line;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -41,6 +42,7 @@ pub(crate) struct App {
     // Transcript overlay state
     transcript_overlay: Option<TranscriptApp>,
     deferred_history_lines: Vec<Line<'static>>,
+    transcript_saved_viewport: Option<Rect>,
 
     enhanced_keys_supported: bool,
 
@@ -51,7 +53,6 @@ pub(crate) struct App {
 impl App {
     pub async fn run(
         tui: &mut tui::Tui,
-        auth_manager: Arc<AuthManager>,
         config: Config,
         initial_prompt: Option<String>,
         initial_images: Vec<PathBuf>,
@@ -60,7 +61,7 @@ impl App {
         let (app_event_tx, mut app_event_rx) = unbounded_channel();
         let app_event_tx = AppEventSender::new(app_event_tx);
 
-        let conversation_manager = Arc::new(ConversationManager::new(auth_manager.clone()));
+        let conversation_manager = Arc::new(ConversationManager::default());
 
         let enhanced_keys_supported = supports_keyboard_enhancement().unwrap_or(false);
 
@@ -86,6 +87,7 @@ impl App {
             transcript_lines: Vec::new(),
             transcript_overlay: None,
             deferred_history_lines: Vec::new(),
+            transcript_saved_viewport: None,
             commit_anim_running: Arc::new(AtomicBool::new(false)),
         };
 
@@ -115,14 +117,17 @@ impl App {
             overlay.handle_event(tui, event)?;
             if overlay.is_done {
                 // Exit alternate screen and restore viewport.
-                let _ = tui.leave_alt_screen();
+                let _ = execute!(tui.terminal.backend_mut(), LeaveAlternateScreen);
+                if let Some(saved) = self.transcript_saved_viewport.take() {
+                    tui.terminal.set_viewport_area(saved);
+                }
                 if !self.deferred_history_lines.is_empty() {
                     let lines = std::mem::take(&mut self.deferred_history_lines);
                     tui.insert_history_lines(lines);
                 }
                 self.transcript_overlay = None;
-                tui.frame_requester().schedule_frame();
             }
+            tui.frame_requester().schedule_frame();
         } else {
             match event {
                 TuiEvent::Key(key_event) => {
@@ -147,14 +152,15 @@ impl App {
                         },
                     )?;
                 }
-                TuiEvent::AttachImage {
-                    path,
-                    width,
-                    height,
-                    format_label,
-                } => {
-                    self.chat_widget
-                        .attach_image(path, width, height, format_label);
+                #[cfg(unix)]
+                TuiEvent::ResumeFromSuspend => {
+                    let cursor_pos = tui.terminal.get_cursor_position()?;
+                    tui.terminal.set_viewport_area(ratatui::layout::Rect::new(
+                        0,
+                        cursor_pos.y,
+                        0,
+                        0,
+                    ));
                 }
             }
         }
@@ -232,20 +238,7 @@ impl App {
             }
             AppEvent::CodexOp(op) => self.chat_widget.submit_op(op),
             AppEvent::DiffResult(text) => {
-                // Clear the in-progress state in the bottom pane
-                self.chat_widget.on_diff_complete();
-                // Enter alternate screen using TUI helper and build pager lines
-                let _ = tui.enter_alt_screen();
-                let pager_lines: Vec<ratatui::text::Line<'static>> = if text.trim().is_empty() {
-                    vec!["No changes detected.".italic().into()]
-                } else {
-                    text.lines().map(ansi_escape_line).collect()
-                };
-                self.transcript_overlay = Some(TranscriptApp::with_title(
-                    pager_lines,
-                    "D I F F".to_string(),
-                ));
-                tui.frame_requester().schedule_frame();
+                self.chat_widget.add_diff_output(text);
             }
             AppEvent::StartFileSearch(query) => {
                 if !query.is_empty() {
@@ -300,7 +293,14 @@ impl App {
                 ..
             } => {
                 // Enter alternate screen and set viewport to full size.
-                let _ = tui.enter_alt_screen();
+                let _ = execute!(tui.terminal.backend_mut(), EnterAlternateScreen);
+                if let Ok(size) = tui.terminal.size() {
+                    self.transcript_saved_viewport = Some(tui.terminal.viewport_area);
+                    tui.terminal
+                        .set_viewport_area(Rect::new(0, 0, size.width, size.height));
+                    let _ = tui.terminal.clear();
+                }
+
                 self.transcript_overlay = Some(TranscriptApp::new(self.transcript_lines.clone()));
                 tui.frame_requester().schedule_frame();
             }

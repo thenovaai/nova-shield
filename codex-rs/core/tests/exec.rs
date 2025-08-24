@@ -70,12 +70,12 @@ async fn truncates_output_lines() {
 
     let output = run_test_cmd(tmp, cmd).await.unwrap();
 
-    let expected_output = (1..=300)
+    let expected_output = (1..=256)
         .map(|i| format!("{i}\n"))
         .collect::<Vec<_>>()
         .join("");
     assert_eq!(output.stdout.text, expected_output);
-    assert_eq!(output.stdout.truncated_after_lines, None);
+    assert_eq!(output.stdout.truncated_after_lines, Some(256));
 }
 
 /// Command succeeds with exit code 0 normally
@@ -91,8 +91,8 @@ async fn truncates_output_bytes() {
 
     let output = run_test_cmd(tmp, cmd).await.unwrap();
 
-    assert!(output.stdout.text.len() >= 15000);
-    assert_eq!(output.stdout.truncated_after_lines, None);
+    assert_eq!(output.stdout.text.len(), 10240);
+    assert_eq!(output.stdout.truncated_after_lines, Some(10));
 }
 
 /// Command not found returns exit code 127, this is not considered a sandbox error

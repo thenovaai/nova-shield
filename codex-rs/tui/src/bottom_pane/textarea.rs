@@ -933,7 +933,7 @@ impl TextArea {
                 }
                 let styled = &self.text[overlap_start..overlap_end];
                 let x_off = self.text[line_range.start..overlap_start].width() as u16;
-                let style = Style::default().fg(Color::Cyan);
+                let style = Style::default().fg(Color::Rgb(255, 165, 0));
                 buf.set_string(area.x + x_off, y, styled, style);
             }
         }
@@ -1473,7 +1473,7 @@ mod tests {
             .timestamp() as u64;
         let mut rng = rand::rngs::StdRng::seed_from_u64(pst_today_seed);
 
-        for _case in 0..500 {
+        for _case in 0..10_000 {
             let mut ta = TextArea::new();
             let mut state = TextAreaState::default();
             // Track element payloads we insert. Payloads use characters '[' and ']' which
@@ -1497,7 +1497,7 @@ mod tests {
             let mut width: u16 = rng.random_range(1..=12);
             let mut height: u16 = rng.random_range(1..=4);
 
-            for _step in 0..60 {
+            for _step in 0..200 {
                 // Mostly stable width/height, occasionally change
                 if rng.random_bool(0.1) {
                     width = rng.random_range(1..=12);

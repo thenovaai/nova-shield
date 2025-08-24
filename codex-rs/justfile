@@ -4,17 +4,17 @@ set positional-arguments
 help:
     just -l
 
-# `codex`
+# `codex` (compat alias for nova)
 codex *args:
-    cargo run --bin codex -- "$@"
+    cargo run --bin nova -- "$@"
 
-# `codex exec`
+# `nova exec`
 exec *args:
-    cargo run --bin codex -- exec "$@"
+    cargo run --bin nova -- exec "$@"
 
-# `codex tui`
+# `nova` interactive TUI
 tui *args:
-    cargo run --bin codex -- tui "$@"
+    cargo run --bin nova -- "$@"
 
 # Run the CLI version of the file-search crate.
 file-search *args:

@@ -1,10 +1,10 @@
 [package]
 edition = "2024"
-name = "codex-cli"
+name = "nova-cli"
 version = { workspace = true }
 
 [[bin]]
-name = "codex"
+name = "nova"
 path = "src/main.rs"
 
 [lib]

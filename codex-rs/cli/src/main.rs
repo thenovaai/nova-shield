@@ -19,7 +19,7 @@ use std::path::PathBuf;
 
 use crate::proto::ProtoCli;
 
-/// Codex CLI
+/// Nova CLI - Enhanced coding agent
 ///
 /// If no subcommand is specified, options will be forwarded to the interactive CLI.
 #[derive(Debug, Parser)]
@@ -29,9 +29,9 @@ use crate::proto::ProtoCli;
     // If a sub‑command is given, ignore requirements of the default args.
     subcommand_negates_reqs = true,
     // The executable is sometimes invoked via a platform‑specific name like
-    // `codex-x86_64-unknown-linux-musl`, but the help output should always use
-    // the generic `codex` command name that users run.
-    bin_name = "codex"
+    // `nova-x86_64-unknown-linux-musl`, but the help output should always use
+    // the generic `nova` command name that users run.
+    bin_name = "nova"
 )]
 struct MultitoolCli {
     #[clap(flatten)]
@@ -46,7 +46,7 @@ struct MultitoolCli {
 
 #[derive(Debug, clap::Subcommand)]
 enum Subcommand {
-    /// Run Codex non-interactively.
+    /// Run Nova non-interactively.
     #[clap(visible_alias = "e")]
     Exec(ExecCli),
 
@@ -56,7 +56,7 @@ enum Subcommand {
     /// Remove stored authentication credentials.
     Logout(LogoutCommand),
 
-    /// Experimental: run Codex as an MCP server.
+    /// Experimental: run Nova as an MCP server.
     Mcp,
 
     /// Run the Protocol stream via stdin/stdout
@@ -69,7 +69,7 @@ enum Subcommand {
     /// Internal debugging commands.
     Debug(DebugArgs),
 
-    /// Apply the latest diff produced by Codex agent as a `git apply` to your local working tree.
+    /// Apply the latest diff produced by Nova agent as a `git apply` to your local working tree.
     #[clap(visible_alias = "a")]
     Apply(ApplyCommand),
 
@@ -230,6 +230,6 @@ fn prepend_config_flags(
 
 fn print_completion(cmd: CompletionCommand) {
     let mut app = MultitoolCli::command();
-    let name = "codex";
+    let name = "nova";
     generate(cmd.shell, &mut app, name, &mut std::io::stdout());
 }

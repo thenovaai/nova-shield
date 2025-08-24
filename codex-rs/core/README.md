@@ -1,6 +1,6 @@
 # codex-core
 
-This crate implements the business logic for Codex. It is designed to be used by the various Codex UIs written in Rust.
+This crate implements the business logic for Nova. It is designed to be used by the various Nova UIs written in Rust.
 
 ## Dependencies
 

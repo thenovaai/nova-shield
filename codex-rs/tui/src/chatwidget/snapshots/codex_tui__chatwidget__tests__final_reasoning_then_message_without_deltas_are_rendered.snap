@@ -1,6 +1,7 @@
 ---
 source: tui/src/chatwidget/tests.rs
+assertion_line: 1026
 expression: combined
 ---
-codex
+nova
 Here is the result.

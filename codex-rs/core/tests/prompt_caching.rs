@@ -1,9 +1,6 @@
-#![allow(clippy::unwrap_used)]
-
 use codex_core::ConversationManager;
 use codex_core::ModelProviderInfo;
 use codex_core::built_in_model_providers;
-use codex_core::model_family::find_family_for_model;
 use codex_core::protocol::AskForApproval;
 use codex_core::protocol::EventMsg;
 use codex_core::protocol::InputItem;
@@ -28,20 +25,8 @@ fn sse_completed(id: &str) -> String {
     load_sse_fixture_with_id("tests/fixtures/completed_template.json", id)
 }
 
-fn assert_tool_names(body: &serde_json::Value, expected_names: &[&str]) {
-    assert_eq!(
-        body["tools"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|t| t["name"].as_str().unwrap().to_string())
-            .collect::<Vec<_>>(),
-        expected_names
-    );
-}
-
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn codex_mini_latest_tools() {
+async fn default_system_instructions_contain_apply_patch() {
     use pretty_assertions::assert_eq;
 
     let server = MockServer::start().await;
@@ -71,14 +56,9 @@ async fn codex_mini_latest_tools() {
     config.model_provider = model_provider;
     config.user_instructions = Some("be consistent and helpful".to_string());
 
-    let conversation_manager =
-        ConversationManager::with_auth(CodexAuth::from_api_key("Test API Key"));
-    config.include_apply_patch_tool = false;
-    config.model = "codex-mini-latest".to_string();
-    config.model_family = find_family_for_model("codex-mini-latest").unwrap();
-
+    let conversation_manager = ConversationManager::default();
     let codex = conversation_manager
-        .new_conversation(config)
+        .new_conversation_with_auth(config, Some(CodexAuth::from_api_key("Test API Key")))
         .await
         .expect("create new conversation")
         .conversation;
@@ -157,10 +137,9 @@ async fn prompt_tools_are_consistent_across_requests() {
     config.include_apply_patch_tool = true;
     config.include_plan_tool = true;
 
-    let conversation_manager =
-        ConversationManager::with_auth(CodexAuth::from_api_key("Test API Key"));
+    let conversation_manager = ConversationManager::default();
     let codex = conversation_manager
-        .new_conversation(config)
+        .new_conversation_with_auth(config, Some(CodexAuth::from_api_key("Test API Key")))
         .await
         .expect("create new conversation")
         .conversation;
@@ -192,6 +171,18 @@ async fn prompt_tools_are_consistent_across_requests() {
     // our internal implementation is responsible for keeping tools in sync
     // with the OpenAI schema, so we just verify the tool presence here
     let expected_tools_names: &[&str] = &["shell", "update_plan", "apply_patch"];
+    fn assert_tool_names(body: &serde_json::Value, expected_names: &[&str]) {
+        assert_eq!(
+            body["tools"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|t| t["name"].as_str().unwrap().to_string())
+                .collect::<Vec<_>>(),
+            expected_names
+        );
+    }
+
     let body0 = requests[0].body_json::<serde_json::Value>().unwrap();
     assert_eq!(
         body0["instructions"],
@@ -238,10 +229,9 @@ async fn prefixes_context_and_instructions_once_and_consistently_across_requests
     config.model_provider = model_provider;
     config.user_instructions = Some("be consistent and helpful".to_string());
 
-    let conversation_manager =
-        ConversationManager::with_auth(CodexAuth::from_api_key("Test API Key"));
+    let conversation_manager = ConversationManager::default();
     let codex = conversation_manager
-        .new_conversation(config)
+        .new_conversation_with_auth(config, Some(CodexAuth::from_api_key("Test API Key")))
         .await
         .expect("create new conversation")
         .conversation;
@@ -360,10 +350,9 @@ async fn overrides_turn_context_but_keeps_cached_prefix_and_key_constant() {
     config.model_provider = model_provider;
     config.user_instructions = Some("be consistent and helpful".to_string());
 
-    let conversation_manager =
-        ConversationManager::with_auth(CodexAuth::from_api_key("Test API Key"));
+    let conversation_manager = ConversationManager::default();
     let codex = conversation_manager
-        .new_conversation(config)
+        .new_conversation_with_auth(config, Some(CodexAuth::from_api_key("Test API Key")))
         .await
         .expect("create new conversation")
         .conversation;
@@ -483,10 +472,9 @@ async fn per_turn_overrides_keep_cached_prefix_and_key_constant() {
     config.model_provider = model_provider;
     config.user_instructions = Some("be consistent and helpful".to_string());
 
-    let conversation_manager =
-        ConversationManager::with_auth(CodexAuth::from_api_key("Test API Key"));
+    let conversation_manager = ConversationManager::default();
     let codex = conversation_manager
-        .new_conversation(config)
+        .new_conversation_with_auth(config, Some(CodexAuth::from_api_key("Test API Key")))
         .await
         .expect("create new conversation")
         .conversation;

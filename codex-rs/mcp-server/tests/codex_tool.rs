@@ -86,7 +86,9 @@ async fn shell_command_approval_triggers_elicitation() -> anyhow::Result<()> {
     )
     .await??;
 
-    let elicitation_request_id = elicitation_request.id.clone();
+    // This is the first request from the server, so the id should be 0 given
+    // how things are currently implemented.
+    let elicitation_request_id = RequestId::Integer(0);
     let params = serde_json::from_value::<ExecApprovalElicitRequestParams>(
         elicitation_request
             .params

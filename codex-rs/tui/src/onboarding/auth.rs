@@ -1,6 +1,5 @@
 #![allow(clippy::unwrap_used)]
 
-use codex_login::AuthManager;
 use codex_login::CLIENT_ID;
 use codex_login::ServerOptions;
 use codex_login::ShutdownHandle;
@@ -113,7 +112,6 @@ pub(crate) struct AuthModeWidget {
     pub codex_home: PathBuf,
     pub login_status: LoginStatus,
     pub preferred_auth_method: AuthMode,
-    pub auth_manager: Arc<AuthManager>,
 }
 
 impl AuthModeWidget {
@@ -173,7 +171,7 @@ impl AuthModeWidget {
 
             let line2 = if is_selected {
                 Line::from(format!("     {description}"))
-                    .fg(Color::Cyan)
+                    .fg(Color::Rgb(255, 165, 0))
                     .add_modifier(Modifier::DIM)
             } else {
                 Line::from(format!("     {description}"))
@@ -261,17 +259,17 @@ impl AuthModeWidget {
             Line::from(""),
             Line::from("> Before you start:"),
             Line::from(""),
-            Line::from("  Decide how much autonomy you want to grant Codex"),
+            Line::from("  Decide how much autonomy you want to grant Nova"),
             Line::from(vec![
                 Span::raw("  For more details see the "),
                 Span::styled(
-                    "\u{1b}]8;;https://github.com/openai/codex\u{7}Codex docs\u{1b}]8;;\u{7}",
+                    "\u{1b}]8;;https://github.com/openai/codex\u{7}Nova docs\u{1b}]8;;\u{7}",
                     Style::default().add_modifier(Modifier::UNDERLINED),
                 ),
             ])
             .style(Style::default().add_modifier(Modifier::DIM)),
             Line::from(""),
-            Line::from("  Codex can make mistakes"),
+            Line::from("  Nova can make mistakes"),
             Line::from("  Review the code it writes and commands it runs")
                 .style(Style::default().add_modifier(Modifier::DIM)),
             Line::from(""),
@@ -285,7 +283,7 @@ impl AuthModeWidget {
             ])
             .style(Style::default().add_modifier(Modifier::DIM)),
             Line::from(""),
-            Line::from("  Press Enter to continue").fg(Color::Cyan),
+            Line::from("  Press Enter to continue").fg(Color::Rgb(255, 165, 0)),
         ];
 
         Paragraph::new(lines)
@@ -311,10 +309,8 @@ impl AuthModeWidget {
 
     fn render_env_var_missing(&self, area: Rect, buf: &mut Buffer) {
         let lines = vec![
-            Line::from(
-                "  To use Codex with the OpenAI API, set OPENAI_API_KEY in your environment",
-            )
-            .style(Style::default().fg(Color::Cyan)),
+            Line::from("  To use Nova with the OpenAI API, set OPENAI_API_KEY in your environment")
+                .style(Style::default().fg(Color::Rgb(255, 165, 0))),
             Line::from(""),
             Line::from("  Press Enter to return")
                 .style(Style::default().add_modifier(Modifier::DIM)),
@@ -340,7 +336,6 @@ impl AuthModeWidget {
             Ok(child) => {
                 let sign_in_state = self.sign_in_state.clone();
                 let request_frame = self.request_frame.clone();
-                let auth_manager = self.auth_manager.clone();
                 tokio::spawn(async move {
                     let auth_url = child.auth_url.clone();
                     {
@@ -354,9 +349,6 @@ impl AuthModeWidget {
                     let r = child.block_until_done().await;
                     match r {
                         Ok(()) => {
-                            // Force the auth manager to reload the new auth information.
-                            auth_manager.reload();
-
                             *sign_in_state.write().unwrap() = SignInState::ChatGptSuccessMessage;
                             request_frame.schedule_frame();
                         }

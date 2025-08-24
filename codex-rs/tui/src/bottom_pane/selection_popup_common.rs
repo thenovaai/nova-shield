@@ -102,7 +102,7 @@ pub(crate) fn render_rows(
             if Some(i) == state.selected_idx {
                 cell = cell.style(
                     Style::default()
-                        .fg(Color::Cyan)
+                        .fg(Color::Rgb(255, 165, 0))
                         .add_modifier(Modifier::BOLD),
                 );
             }

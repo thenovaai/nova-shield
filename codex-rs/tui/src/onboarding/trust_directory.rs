@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use codex_core::config::set_project_trusted;
-use codex_core::git_info::resolve_root_git_project_for_trust;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEvent;
 use ratatui::buffer::Buffer;
@@ -70,7 +69,7 @@ impl WidgetRef for &TrustDirectoryWidget {
             |idx: usize, option: TrustDirectorySelection, text: &str| -> Line<'static> {
                 let is_selected = self.highlighted == option;
                 if is_selected {
-                    Line::from(format!("> {}. {text}", idx + 1)).cyan()
+                    Line::from(format!("> {}. {text}", idx + 1)).fg(Color::Rgb(255, 165, 0))
                 } else {
                     Line::from(format!("  {}. {}", idx + 1, text))
                 }
@@ -145,11 +144,10 @@ impl StepStateProvider for TrustDirectoryWidget {
 
 impl TrustDirectoryWidget {
     fn handle_trust(&mut self) {
-        let target =
-            resolve_root_git_project_for_trust(&self.cwd).unwrap_or_else(|| self.cwd.clone());
-        if let Err(e) = set_project_trusted(&self.codex_home, &target) {
+        if let Err(e) = set_project_trusted(&self.codex_home, &self.cwd) {
             tracing::error!("Failed to set project trusted: {e:?}");
-            self.error = Some(format!("Failed to set trust for {}: {e}", target.display()));
+            self.error = Some(e.to_string());
+            // self.error = Some("Failed to set project trusted".to_string());
         }
 
         self.selection = Some(TrustDirectorySelection::Trust);

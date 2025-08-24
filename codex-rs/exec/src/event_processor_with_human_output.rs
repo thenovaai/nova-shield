@@ -84,7 +84,8 @@ impl EventProcessorWithHumanOutput {
                 magenta: Style::new().magenta(),
                 red: Style::new().red(),
                 green: Style::new().green(),
-                cyan: Style::new().cyan(),
+                // Use "cyan" field as our Nova accent (orange).
+                cyan: Style::new().truecolor(255, 165, 0),
                 show_agent_reasoning: !config.hide_agent_reasoning,
                 show_raw_agent_reasoning: config.show_raw_agent_reasoning,
                 answer_started: false,
@@ -140,11 +141,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
     /// screen.
     fn print_config_summary(&mut self, config: &Config, prompt: &str) {
         const VERSION: &str = env!("CARGO_PKG_VERSION");
-        ts_println!(
-            self,
-            "OpenAI Codex v{} (research preview)\n--------",
-            VERSION
-        );
+        ts_println!(self, "Nova v{}\n--------", VERSION);
 
         let entries = create_config_summary_entries(config);
 
@@ -192,7 +189,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
             }
             EventMsg::AgentMessageDelta(AgentMessageDeltaEvent { delta }) => {
                 if !self.answer_started {
-                    ts_println!(self, "{}\n", "codex".style(self.italic).style(self.magenta));
+                    ts_println!(self, "{}\n", "nova".style(self.italic).style(self.cyan));
                     self.answer_started = true;
                 }
                 print!("{delta}");
@@ -204,11 +201,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                     return CodexStatus::Running;
                 }
                 if !self.reasoning_started {
-                    ts_println!(
-                        self,
-                        "{}\n",
-                        "thinking".style(self.italic).style(self.magenta),
-                    );
+                    ts_println!(self, "{}\n", "thinking".style(self.italic).style(self.cyan));
                     self.reasoning_started = true;
                 }
                 print!("{delta}");
@@ -256,7 +249,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                     ts_println!(
                         self,
                         "{}\n{}",
-                        "codex".style(self.italic).style(self.magenta),
+                        "nova".style(self.italic).style(self.magenta),
                         message,
                     );
                 } else {
@@ -279,7 +272,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                 ts_println!(
                     self,
                     "{} {} in {}",
-                    "exec".style(self.magenta),
+                    "exec".style(self.cyan),
                     escape_command(&command).style(self.bold),
                     cwd.to_string_lossy(),
                 );
@@ -287,10 +280,10 @@ impl EventProcessor for EventProcessorWithHumanOutput {
             EventMsg::ExecCommandOutputDelta(_) => {}
             EventMsg::ExecCommandEnd(ExecCommandEndEvent {
                 call_id,
-                aggregated_output,
+                stdout,
+                stderr,
                 duration,
                 exit_code,
-                ..
             }) => {
                 let exec_command = self.call_id_to_command.remove(&call_id);
                 let (duration, call) = if let Some(ExecCommandBegin { command, .. }) = exec_command
@@ -303,7 +296,8 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                     ("".to_string(), format!("exec('{call_id}')"))
                 };
 
-                let truncated_output = aggregated_output
+                let output = if exit_code == 0 { stdout } else { stderr };
+                let truncated_output = output
                     .lines()
                     .take(MAX_OUTPUT_LINES_FOR_EXEC_TOOL_CALL)
                     .collect::<Vec<_>>()
@@ -327,7 +321,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                 ts_println!(
                     self,
                     "{} {}",
-                    "tool".style(self.magenta),
+                    "tool".style(self.cyan),
                     format_mcp_invocation(&invocation).style(self.bold),
                 );
             }
@@ -379,7 +373,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                 ts_println!(
                     self,
                     "{} auto_approved={}:",
-                    "apply_patch".style(self.magenta),
+                    "apply_patch".style(self.cyan),
                     auto_approved,
                 );
 
@@ -393,7 +387,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                                 format_file_change(change),
                                 path.to_string_lossy()
                             );
-                            println!("{}", header.style(self.magenta));
+                            println!("{}", header.style(self.cyan));
                             for line in content.lines() {
                                 println!("{}", line.style(self.green));
                             }
@@ -404,7 +398,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                                 format_file_change(change),
                                 path.to_string_lossy()
                             );
-                            println!("{}", header.style(self.magenta));
+                            println!("{}", header.style(self.cyan));
                         }
                         FileChange::Update {
                             unified_diff,
@@ -420,7 +414,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                             } else {
                                 format!("{} {}", format_file_change(change), path.to_string_lossy())
                             };
-                            println!("{}", header.style(self.magenta));
+                            println!("{}", header.style(self.cyan));
 
                             // Colorize diff lines. We keep file header lines
                             // (--- / +++) without extra coloring so they are
@@ -476,7 +470,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                 }
             }
             EventMsg::TurnDiff(TurnDiffEvent { unified_diff }) => {
-                ts_println!(self, "{}", "turn diff:".style(self.magenta));
+                ts_println!(self, "{}", "turn diff:".style(self.cyan));
                 println!("{unified_diff}");
             }
             EventMsg::ExecApprovalRequest(_) => {
@@ -491,7 +485,7 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                         ts_println!(
                             self,
                             "{}\n{}",
-                            "codex".style(self.italic).style(self.magenta),
+                            "nova".style(self.italic).style(self.magenta),
                             agent_reasoning_event.text,
                         );
                     } else {
@@ -538,7 +532,6 @@ impl EventProcessor for EventProcessorWithHumanOutput {
                 }
             },
             EventMsg::ShutdownComplete => return CodexStatus::Shutdown,
-            EventMsg::ConversationHistory(_) => {}
         }
         CodexStatus::Running
     }

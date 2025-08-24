@@ -99,7 +99,7 @@ mod tests {
             frame_requester: crate::tui::FrameRequester::test_dummy(),
             has_input_focus: true,
             enhanced_keys_supported: false,
-            placeholder_text: "Ask Codex to do anything".to_string(),
+            placeholder_text: "Ask Nova to scan, secure, or code".to_string(),
         });
         assert_eq!(CancellationEvent::Handled, view.on_ctrl_c(&mut pane));
         assert!(view.queue.is_empty());

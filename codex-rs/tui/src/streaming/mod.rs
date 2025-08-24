@@ -64,8 +64,6 @@ impl HeaderEmitter {
 
     pub(crate) fn maybe_emit(&mut self, out_lines: &mut Vec<ratatui::text::Line<'static>>) -> bool {
         if !self.emitted_in_stream && !self.emitted_this_turn {
-            // Add a leading blank line before the header for visual spacing
-            out_lines.push(ratatui::text::Line::from(""));
             out_lines.push(render_header_line());
             self.emitted_in_stream = true;
             self.emitted_this_turn = true;
@@ -76,6 +74,7 @@ impl HeaderEmitter {
 }
 
 fn render_header_line() -> ratatui::text::Line<'static> {
+    use ratatui::style::Color;
     use ratatui::style::Stylize;
-    ratatui::text::Line::from("codex".magenta().bold())
+    ratatui::text::Line::from("nova".fg(Color::Rgb(255, 165, 0)).bold())
 }

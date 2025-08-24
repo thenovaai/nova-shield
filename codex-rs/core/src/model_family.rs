@@ -1,5 +1,3 @@
-use crate::tool_apply_patch::ApplyPatchToolType;
-
 /// A model family is a group of models that share certain characteristics.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ModelFamily {
@@ -26,9 +24,9 @@ pub struct ModelFamily {
     // See https://platform.openai.com/docs/guides/tools-local-shell
     pub uses_local_shell_tool: bool,
 
-    /// Present if the model performs better when `apply_patch` is provided as
-    /// a tool call instead of just a bash command
-    pub apply_patch_tool_type: Option<ApplyPatchToolType>,
+    /// True if the model performs better when `apply_patch` is provided as
+    /// a tool call instead of just a bash command.
+    pub uses_apply_patch_tool: bool,
 }
 
 macro_rules! model_family {
@@ -42,7 +40,7 @@ macro_rules! model_family {
             needs_special_apply_patch_instructions: false,
             supports_reasoning_summaries: false,
             uses_local_shell_tool: false,
-            apply_patch_tool_type: None,
+            uses_apply_patch_tool: false,
         };
         // apply overrides
         $(
@@ -62,7 +60,7 @@ macro_rules! simple_model_family {
             needs_special_apply_patch_instructions: false,
             supports_reasoning_summaries: false,
             uses_local_shell_tool: false,
-            apply_patch_tool_type: None,
+            uses_apply_patch_tool: false,
         })
     }};
 }
@@ -90,7 +88,6 @@ pub fn find_family_for_model(slug: &str) -> Option<ModelFamily> {
         model_family!(
             slug, slug,
             supports_reasoning_summaries: true,
-            apply_patch_tool_type: Some(ApplyPatchToolType::Freeform),
         )
     } else if slug.starts_with("gpt-4.1") {
         model_family!(
@@ -98,7 +95,7 @@ pub fn find_family_for_model(slug: &str) -> Option<ModelFamily> {
             needs_special_apply_patch_instructions: true,
         )
     } else if slug.starts_with("gpt-oss") {
-        model_family!(slug, "gpt-oss", apply_patch_tool_type: Some(ApplyPatchToolType::Function))
+        model_family!(slug, "gpt-oss", uses_apply_patch_tool: true)
     } else if slug.starts_with("gpt-4o") {
         simple_model_family!(slug, "gpt-4o")
     } else if slug.starts_with("gpt-3.5") {
@@ -107,7 +104,6 @@ pub fn find_family_for_model(slug: &str) -> Option<ModelFamily> {
         model_family!(
             slug, "gpt-5",
             supports_reasoning_summaries: true,
-            apply_patch_tool_type: Some(ApplyPatchToolType::Freeform),
         )
     } else {
         None
